@@ -1,6 +1,6 @@
 {
   "name": "advanced-server-actions",
-  "version": "0.0.1",
+  "version": "0.0.11",
   "description": "A package for better control of the server actions inspired in the ZSA",
   "main": "./src/index.ts",
   "license": "MIT",
