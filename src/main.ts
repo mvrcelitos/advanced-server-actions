@@ -7,9 +7,7 @@ class ServerProcedure<TInternals extends ProcedureInternals> {
     this.$internals = internals;
   }
 
-  public handler<TOutput>(
-    fn: ({ ctx }: { ctx: TInternals["context"] }) => Promise<TOutput> | TOutput,
-  ) {
+  public handler<TOutput>(fn: ({ ctx }: { ctx: TInternals["context"] }) => Promise<TOutput> | TOutput) {
     this.$internals.procedures?.push(fn);
     return this as ServerProcedure<{
       context: TOutput;
@@ -31,9 +29,7 @@ class ServerProcedure<TInternals extends ProcedureInternals> {
   }
 }
 
-class ServerAction<TInternals extends ActionInternals>
-  implements IServerAction<TInternals>
-{
+class ServerAction<TInternals extends ActionInternals> implements IServerAction<TInternals> {
   private declare $internals: TInternals;
 
   constructor(internals: TInternals) {
@@ -41,18 +37,12 @@ class ServerAction<TInternals extends ActionInternals>
   }
 
   public input<TInput = any, TOutput = unknown>(
-    fn: (
-      input: TInput,
-      args: { ctx: TInternals["context"] },
-    ) => Promise<TOutput> | TOutput,
+    fn: (input: TInput, args: { ctx: TInternals["context"] }) => Promise<TOutput> | TOutput,
   ) {
     this.$internals.input = fn;
     return this as ServerAction<
       Omit<TInternals, "input"> & {
-        input: (
-          input: TInput,
-          args: { ctx: TInternals["context"] },
-        ) => Promise<TOutput> | TOutput;
+        input: (input: TInput, args: { ctx: TInternals["context"] }) => Promise<TOutput> | TOutput;
       }
     >;
   }
@@ -63,9 +53,7 @@ class ServerAction<TInternals extends ActionInternals>
       input,
     }: {
       ctx: TInternals["context"];
-      input: TInternals["input"] extends Function
-        ? Awaited<ReturnType<TInternals["input"]>>
-        : undefined;
+      input: TInternals["input"] extends Function ? Awaited<ReturnType<TInternals["input"]>> : undefined;
     }) => Promise<TOutput> | TOutput,
   ) {
     const internals = this.$internals;
@@ -75,13 +63,9 @@ class ServerAction<TInternals extends ActionInternals>
         ? void
         : Parameters<TInternals["input"]>[0]
       : void;
-    type Output = TInternals["input"] extends Function
-      ? Awaited<ReturnType<TInternals["input"]>>
-      : undefined;
+    type Output = TInternals["input"] extends Function ? Awaited<ReturnType<TInternals["input"]>> : undefined;
 
-    return async function (
-      input: Input,
-    ): Promise<[TOutput, null] | [null, Error]> {
+    return async function (input: Input): Promise<[TOutput, null] | [null, Error]> {
       let ctx: unknown = undefined;
 
       try {
@@ -94,9 +78,7 @@ class ServerAction<TInternals extends ActionInternals>
 
         // Parse the data
         const data = (
-          internals?.input instanceof Function
-            ? await internals.input?.(input, { ctx })
-            : undefined
+          internals?.input instanceof Function ? await internals.input?.(input, { ctx }) : undefined
         ) as Output;
 
         // The function passed by the user to be the handled
@@ -106,12 +88,7 @@ class ServerAction<TInternals extends ActionInternals>
         return [response, null];
       } catch (error) {
         await internals.onError?.({ ctx, error });
-        return [
-          null,
-          error instanceof Error
-            ? error
-            : new Error("Internal error", { cause: error }),
-        ];
+        return [null, error instanceof Error ? error : new Error("Internal error", { cause: error })];
       } finally {
         await internals.onComplete?.({ ctx });
       }
@@ -121,37 +98,27 @@ class ServerAction<TInternals extends ActionInternals>
   // Event handlers
   public onStart(fn: ActionInternals["onStart"]) {
     this.$internals.onStart = fn;
-    return this as ServerAction<
-      Omit<TInternals, "onStart"> & { onStart: typeof fn }
-    >;
+    return this as ServerAction<Omit<TInternals, "onStart"> & { onStart: typeof fn }>;
   }
 
   public onSuccess(fn: ActionInternals["onSuccess"]) {
     this.$internals.onSuccess = fn;
-    return this as ServerAction<
-      Omit<TInternals, "onSuccess"> & { onSuccess: typeof fn }
-    >;
+    return this as ServerAction<Omit<TInternals, "onSuccess"> & { onSuccess: typeof fn }>;
   }
 
   public onComplete(fn: ActionInternals["onComplete"]) {
     this.$internals.onComplete = fn;
-    return this as ServerAction<
-      Omit<TInternals, "onComplete"> & { onComplete: typeof fn }
-    >;
+    return this as ServerAction<Omit<TInternals, "onComplete"> & { onComplete: typeof fn }>;
   }
 
   public onError(fn: ActionInternals["onError"]) {
     this.$internals.onError = fn;
-    return this as ServerAction<
-      Omit<TInternals, "onError"> & { onError: typeof fn }
-    >;
+    return this as ServerAction<Omit<TInternals, "onError"> & { onError: typeof fn }>;
   }
 
   public onInputParseError(fn: ActionInternals["onInputParseError"]) {
     this.$internals.onInputParseError = fn;
-    return this as ServerAction<
-      Omit<TInternals, "onInputParseError"> & { onInputParseError: typeof fn }
-    >;
+    return this as ServerAction<Omit<TInternals, "onInputParseError"> & { onInputParseError: typeof fn }>;
   }
 }
 
